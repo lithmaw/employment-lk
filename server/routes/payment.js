@@ -105,4 +105,20 @@ router.get('/return', async (req, res) => {
   }
 });
 
+// ── GET /api/payment/test-success (BYPASS FOR TESTING) ────────────────────
+router.get('/test-success', async (req, res) => {
+  try {
+    const orderId = 'EMP-TEST-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    const token = jwt.sign(
+      { orderId, name: 'Test User', email: 'test@example.com', phone: '0712345678', paid: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.redirect(`/form2.html?token=${token}`);
+  } catch (err) {
+    console.error('Test success error:', err);
+    res.redirect('/payment.html?error=server_error');
+  }
+});
+
 module.exports = router;

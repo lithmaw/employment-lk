@@ -16,20 +16,24 @@ router.post('/register', async (req, res) => {
     const lastName  = parts.slice(1).join(' ') || parts[0];
     const orderId   = 'EMP-' + crypto.randomBytes(8).toString('hex').toUpperCase();
 
-    await createOrder({
-      orderId, name, firstName, lastName, email, phone,
-      status: 'Pending COD',
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      await createOrder({
+        orderId, name, firstName, lastName, email, phone,
+        status: 'Pending COD',
+        createdAt: new Date().toISOString(),
+      });
 
-    await appendRow([
-      new Date().toISOString(), '',
-      firstName, lastName,
-      '', '', phone, email,
-      '', '', '', '', '', '',
-      'Cash on Delivery', 'Pending COD',
-      '', '', '', '', '',
-    ]);
+      await appendRow([
+        new Date().toISOString(), '',
+        firstName, lastName,
+        '', '', phone, email,
+        '', '', '', '', '', '',
+        'Cash on Delivery', 'Pending COD',
+        '', '', '', '', '',
+      ]);
+    } catch (dbErr) {
+      console.warn('DB/Sheets integration skipped/failed:', dbErr.message);
+    }
 
     const token = jwt.sign(
       { orderId, name, email, phone, codPending: true },
