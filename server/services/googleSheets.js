@@ -1,11 +1,10 @@
 const { google } = require('googleapis');
-const path = require('path');
+const { getGoogleAuthOptions } = require('./googleAuth');
 
 function getSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: path.resolve(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || './service-account.json'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
+  const auth = new google.auth.GoogleAuth(
+    getGoogleAuthOptions(['https://www.googleapis.com/auth/spreadsheets'])
+  );
   return google.sheets({ version: 'v4', auth });
 }
 

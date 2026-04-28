@@ -1,28 +1,22 @@
 const { google } = require('googleapis');
 const { Readable } = require('stream');
-const fs = require('fs');
-const path = require('path');
+const { getGoogleAuthOptions } = require('./googleAuth');
 
 function getDriveClient() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: path.resolve(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || './service-account.json'),
-    scopes: ['https://www.googleapis.com/auth/drive'],
-  });
+  const auth = new google.auth.GoogleAuth(
+    getGoogleAuthOptions(['https://www.googleapis.com/auth/drive'])
+  );
   return google.drive({ version: 'v3', auth });
 }
 
 function assertDriveConfig() {
-  const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || './service-account.json';
   const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
   if (!rootFolderId || rootFolderId === 'your_drive_folder_id_here') {
     throw new Error('Google Drive is not configured: set GOOGLE_DRIVE_FOLDER_ID in .env');
   }
 
-  return {
-    keyFilePath: path.resolve(keyFile),
-    rootFolderId,
-  };
+  return { rootFolderId };
 }
 
 async function getOrCreateFolder(drive, folderName, parentId) {
@@ -48,15 +42,8 @@ async function getOrCreateFolder(drive, folderName, parentId) {
  * Returns { driveFileId, driveViewUrl }.
  */
 async function uploadFileToDrive(fileBuffer, mimeType, fileName, orderId) {
-  const { keyFilePath, rootFolderId } = assertDriveConfig();
-
-  const drive        = getDriveClient();
-
-  try {
-    await fs.promises.access(keyFilePath);
-  } catch {
-    throw new Error(`Google Drive service account file not found: ${keyFilePath}`);
-  }
+  const { rootFolderId } = assertDriveConfig();
+  const drive = getDriveClient();
 
   // Ensure applicant subfolder exists
   const applicantFolderId = await getOrCreateFolder(drive, orderId, rootFolderId);
