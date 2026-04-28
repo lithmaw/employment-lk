@@ -15,6 +15,10 @@ app.use('/api/cod',     require('./routes/cod'));
 app.use('/api/upload',  require('./routes/upload'));
 app.use('/api/submit',  require('./routes/submit'));
 app.use('/api/auth',    require('./routes/auth'));
+app.get('/api/verify-session', (req, res, next) => {
+  req.url = '/verify';
+  next();
+}, require('./routes/auth'));
 
 // Root → payment form
 app.get('/', (_req, res) => res.redirect('/payment.html'));

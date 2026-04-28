@@ -354,21 +354,22 @@
       }
 
       try {
-        const res = await fetch('/api/verify-session', {
+        const res = await fetch('/api/auth/verify', {
           headers: { 'Authorization': `Bearer ${jwtToken}` }
         });
         if (!res.ok) throw new Error('Session expired or invalid');
 
         const data = await res.json();
-        paymentMethod = data.paymentMethod;
+        const session = data.payload || {};
+        paymentMethod = session.codPending ? 'cod' : (session.paid ? 'online' : null);
 
         if (paymentMethod === 'cod') {
           document.getElementById('codBanner').classList.remove('hidden');
         }
 
         // Pre-fill phone if available from token claims
-        if (data.phone) {
-          document.getElementById('phone').value = data.phone;
+        if (session.phone) {
+          document.getElementById('phone').value = session.phone;
         }
 
         document.getElementById('gateScreen').classList.add('hidden');
