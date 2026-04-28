@@ -30,7 +30,10 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('Upload error:', err);
-    res.status(500).json({ error: 'Upload failed' });
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File exceeds 10 MB limit' });
+    }
+    res.status(500).json({ error: err.message || 'Upload failed' });
   }
 });
 

@@ -518,8 +518,11 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
         headers: { 'Authorization': `Bearer ${jwtToken}` },
         body: fd
       });
-      if(!res.ok) throw new Error(`Failed to upload ${label}`);
-      return (await res.json()).driveViewUrl;
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok) {
+        throw new Error(data.error || `Failed to upload ${label}`);
+      }
+      return data.driveViewUrl;
     };
 
     const payload = {};
