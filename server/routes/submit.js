@@ -16,13 +16,27 @@ function generateRef() {
 router.post('/', auth, async (req, res) => {
   try {
     const user = req.user;
+    const body = req.body || {};
+    const pick = (...keys) => {
+      for (const key of keys) {
+        if (body[key] !== undefined && body[key] !== null && body[key] !== '') {
+          return body[key];
+        }
+      }
+      return '';
+    };
+
     const {
       firstName, lastName, address, city, province, postal,
       dob, gender, nic, phone,
       passportNumber, passportCountry, passportIssue, passportExpiry,
       jobCategory,
-      passportUrl, birthCertUrl, nicUrl, photoUrl, extraUrls,
-    } = req.body;
+      extraUrls,
+    } = body;
+    const passportUrl = pick('passportUrl', 'passporturl', 'passport_url');
+    const birthCertUrl = pick('birthCertUrl', 'birthcerturl', 'birth_cert_url');
+    const nicUrl = pick('nicUrl', 'nicurl', 'nic_url');
+    const photoUrl = pick('photoUrl', 'photourl', 'photo_url');
 
     // Required field check
     const required = { firstName, lastName, address, city, province, nic,
@@ -74,7 +88,7 @@ router.post('/', auth, async (req, res) => {
     res.json({ refNumber });
   } catch (err) {
     console.error('Submit error:', err);
-    res.status(500).json({ error: 'Submission failed' });
+    res.status(500).json({ error: err.message || 'Submission failed' });
   }
 });
 

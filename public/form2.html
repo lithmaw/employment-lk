@@ -522,7 +522,11 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
       if(!res.ok) {
         throw new Error(data.error || `Failed to upload ${label}`);
       }
-      return data.fileUrl || data.driveViewUrl;
+      const uploadedUrl = data.fileUrl || data.driveViewUrl || data.url;
+      if (!uploadedUrl) {
+        throw new Error(`${label} upload completed, but the server did not return a file URL`);
+      }
+      return uploadedUrl;
     };
 
     const payload = {};
@@ -534,6 +538,10 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
     payload.extraUrls = [];
     for(let i=0; i<fileRegistry.extraUrls.length; i++){
       payload.extraUrls.push(await uploadFile(fileRegistry.extraUrls[i], `Extra Document ${i+1}`));
+    }
+
+    if (!payload.passportUrl || !payload.birthCertUrl || !payload.nicUrl || !payload.photoUrl) {
+      throw new Error('One or more document uploads finished without a saved file reference');
     }
 
     // 2. Submit Form
