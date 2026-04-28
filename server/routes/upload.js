@@ -2,7 +2,7 @@ const express  = require('express');
 const router   = express.Router();
 const multer   = require('multer');
 const auth     = require('../middleware/auth');
-const { uploadFileToDrive } = require('../services/googleDrive');
+const { uploadFileToSupabase } = require('../services/supabase');
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
 const MAX_SIZE      = 10 * 1024 * 1024; // 10 MB
@@ -26,7 +26,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'File exceeds 10 MB limit' });
     }
 
-    const result = await uploadFileToDrive(buffer, mimetype, originalname, req.user.orderId);
+    const result = await uploadFileToSupabase(buffer, mimetype, originalname, req.user.orderId);
     res.json(result);
   } catch (err) {
     console.error('Upload error:', err);

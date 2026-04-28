@@ -522,7 +522,7 @@ document.getElementById('docForm').addEventListener('submit', async (e) => {
       if(!res.ok) {
         throw new Error(data.error || `Failed to upload ${label}`);
       }
-      return data.driveViewUrl;
+      return data.fileUrl || data.driveViewUrl;
     };
 
     const payload = {};

@@ -1,6 +1,11 @@
 const { google } = require('googleapis');
 const { getGoogleAuthOptions } = require('./googleAuth');
 
+function isSheetsConfigured() {
+  const sheetId = process.env.GOOGLE_SHEETS_ID;
+  return Boolean(sheetId && sheetId !== 'your_spreadsheet_id_here');
+}
+
 function getSheetsClient() {
   const auth = new google.auth.GoogleAuth(
     getGoogleAuthOptions(['https://www.googleapis.com/auth/spreadsheets'])
@@ -13,6 +18,10 @@ function getSheetsClient() {
  * Columns A-U as defined in the spec.
  */
 async function appendRow(values) {
+  if (!isSheetsConfigured()) {
+    return;
+  }
+
   const sheets = getSheetsClient();
   await sheets.spreadsheets.values.append({
     spreadsheetId:   process.env.GOOGLE_SHEETS_ID,
