@@ -4,7 +4,13 @@ const multer   = require('multer');
 const auth     = require('../middleware/auth');
 const { uploadFileToSupabase } = require('../services/supabase');
 
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+const BASE_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+const CV_ALLOWED_TYPES = [
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-word',
+  'application/octet-stream',
+];
 const MAX_SIZE      = 10 * 1024 * 1024; // 10 MB
 
 const upload = multer({
@@ -18,9 +24,15 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file received' });
 
     const { mimetype, buffer, originalname, size } = req.file;
+    const uploadType = req.body.type;
+    const isCvUpload = uploadType === 'cvUrl';
+    const allowedTypes = isCvUpload ? [...BASE_ALLOWED_TYPES, ...CV_ALLOWED_TYPES] : BASE_ALLOWED_TYPES;
+    const fileExt = originalname.split('.').pop()?.toLowerCase() || '';
+    const isAllowedCvExtension = ['doc', 'docx', 'pdf'].includes(fileExt);
 
-    if (!ALLOWED_TYPES.includes(mimetype)) {
-      return res.status(400).json({ error: 'Invalid file type. Allowed: PDF, JPG, PNG' });
+    if (!allowedTypes.includes(mimetype) || (isCvUpload && !isAllowedCvExtension)) {
+      const allowedLabel = isCvUpload ? 'PDF, DOC, DOCX' : 'PDF, JPG, PNG';
+      return res.status(400).json({ error: `Invalid file type. Allowed: ${allowedLabel}` });
     }
     if (size > MAX_SIZE) {
       return res.status(400).json({ error: 'File exceeds 10 MB limit' });

@@ -485,9 +485,16 @@
         headers: { 'Authorization': `Bearer ${jwtToken}` },
         body: formData
       });
-      if (!res.ok) throw new Error(`Failed to upload ${type}`);
+      if (!res.ok) {
+        let message = `Failed to upload ${type}`;
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+        } catch (_) { }
+        throw new Error(message);
+      }
       const data = await res.json();
-      return data.url;
+      return data.fileUrl;
     }
 
     form.addEventListener('submit', async (e) => {
