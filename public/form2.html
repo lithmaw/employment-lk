@@ -1,580 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Submit Documents — Employement</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0D1B2A;--navy-mid:#1A2F45;--gold:#C9A84C;--gold-light:#E8C96A;
-  --white:#FAFAF8;--muted:#8A9BB0;--danger:#E05C5C;--success:#4CAF7D;--warning:#F0A04B;
-}
-html,body{min-height:100%;background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif}
-body{
-  padding:40px 24px;
-  background:radial-gradient(ellipse at top center,rgba(201,168,76,.05) 0%,transparent 70%),var(--navy);
-}
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(201,168,76,.02) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(201,168,76,.02) 1px,transparent 1px);
-  background-size:40px 40px;pointer-events:none;z-index:0;
-}
-
-/* ── Screen States ── */
-#gateScreen, #successScreen {
-  position:fixed;inset:0;background:var(--navy);z-index:100;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:24px;text-align:center;
-}
-.hidden{display:none !important}
-
-/* ── Typography ── */
-h1,h2,h3{font-family:'Playfair Display',serif}
-.title{font-size:28px;margin-bottom:8px;color:var(--white)}
-.sub{color:var(--muted);margin-bottom:24px;font-size:15px}
-
-/* ── Layout ── */
-.container{max-width:800px;margin:0 auto;position:relative;z-index:1}
-.card{
-  background:rgba(26,47,69,.55);border:1px solid rgba(201,168,76,.18);
-  border-radius:20px;padding:36px;backdrop-filter:blur(18px);margin-bottom:24px;
-}
-.row{display:flex;gap:20px;margin-bottom:18px}
-.col{flex:1}
-@media(max-width:600px){.row{flex-direction:column;gap:18px}}
-
-/* ── Banners ── */
-.banner{
-  background:rgba(240,160,75,.08);border:1px solid rgba(240,160,75,.3);
-  border-radius:10px;padding:14px 16px;margin-bottom:24px;
-  color:var(--warning);font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;
-}
-
-/* ── Progress Bar ── */
-.progress-wrap{margin-bottom:40px}
-.progress-track{display:flex;justify-content:space-between;position:relative}
-.progress-track::before{
-  content:'';position:absolute;top:15px;left:0;right:0;height:2px;
-  background:rgba(138,155,176,.2);z-index:-1;
-}
-.step{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative}
-.step-dot{
-  width:32px;height:32px;border-radius:50%;background:var(--navy-mid);
-  border:2px solid rgba(138,155,176,.3);display:grid;place-items:center;
-  font-size:13px;font-weight:600;color:var(--muted);transition:all .3s;
-}
-.step.active .step-dot{background:var(--gold);border-color:var(--gold);color:#0D1B2A}
-.step.done .step-dot{background:var(--success);border-color:var(--success);color:#fff}
-.step-label{font-size:12px;color:var(--muted);font-weight:500}
-.step.active .step-label{color:var(--gold)}
-
-/* ── Form Controls ── */
-.field{margin-bottom:18px}
-label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
-input,select,textarea{
-  width:100%;padding:12px 14px;background:rgba(13,27,42,.7);border:1.5px solid rgba(138,155,176,.22);
-  border-radius:10px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;
-  outline:none;transition:border-color .2s;
-}
-textarea{resize:vertical;min-height:80px}
-input:focus,select:focus,textarea:focus{border-color:var(--gold)}
-.invalid{border-color:var(--danger) !important}
-
-/* ── Upload Zones ── */
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:600px){.upload-grid{grid-template-columns:1fr}}
-.dropzone{
-  border:2px dashed rgba(138,155,176,.3);border-radius:14px;padding:24px;
-  text-align:center;cursor:pointer;transition:all .2s;background:rgba(13,27,42,.4);
-  position:relative;overflow:hidden;
-}
-.dropzone:hover,.dropzone.dragover{border-color:var(--gold);background:rgba(201,168,76,.05)}
-.dropzone.invalid{border-color:var(--danger);background:rgba(224,92,92,.05)}
-.dropzone.has-file{border-style:solid;border-color:var(--success);background:rgba(76,175,125,.05)}
-.dz-icon{font-size:24px;margin-bottom:10px}
-.dz-title{font-size:14px;font-weight:600;margin-bottom:4px}
-.dz-sub{font-size:11px;color:var(--muted)}
-.dz-file{display:none;position:absolute;inset:0;opacity:0;cursor:pointer}
-.file-name{font-size:13px;color:var(--success);margin-top:10px;word-break:break-all}
-
-/* ── Multi Upload List ── */
-#extraFilesList{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.extra-item{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:8px 12px;background:rgba(255,255,255,.05);border-radius:6px;font-size:13px;
-}
-.btn-remove{background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px}
-
-/* ── Checkboxes ── */
-.check-wrap{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
-.check-wrap input[type="checkbox"]{width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--gold)}
-.check-label{font-size:13.5px;color:var(--muted);line-height:1.5;cursor:pointer}
-
-/* ── Buttons ── */
-.btn{
-  padding:14px 28px;background:linear-gradient(135deg,var(--gold),var(--gold-light));
-  color:#0D1B2A;font-family:'DM Sans',sans-serif;font-size:15.5px;font-weight:700;
-  border:none;border-radius:10px;cursor:pointer;transition:transform .2s;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn:hover:not(:disabled){transform:translateY(-2px)}
-.btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
-.btn-outline{background:transparent;border:1.5px solid var(--gold);color:var(--gold)}
-
-/* ── Overlay Loading ── */
-#loadingOverlay{
-  position:fixed;inset:0;background:rgba(13,27,42,.9);backdrop-filter:blur(5px);
-  z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;
-}
-.spinner{
-  width:50px;height:50px;border:4px solid rgba(201,168,76,.2);
-  border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;
-  margin-bottom:20px;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-#loadingText{font-size:16px;font-weight:500;color:var(--gold)}
-
-.global-err{display:none;background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);
-  border-radius:10px;padding:12px 14px;margin-bottom:24px;font-size:13.5px;color:var(--danger)}
-.global-err.show{display:block}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Documents — Employment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
 
-<!-- Gate Screen -->
-<div id="gateScreen">
-  <div class="spinner"></div>
-  <h2 style="margin-bottom:12px">Verifying Session...</h2>
-  <div id="gateMsg" style="color:var(--danger);margin-bottom:20px;display:none"></div>
-  <a href="/payment.html" class="btn btn-outline hidden" id="gateBtn">Return to Registration</a>
-</div>
+<body class="antialiased text-gray-900 min-h-screen py-8 px-4 sm:px-6">
 
-<!-- Main Form -->
-<div class="container hidden" id="mainApp">
-  <div class="progress-wrap">
-    <div class="progress-track">
-      <div class="step done"><div class="step-dot">✓</div><div class="step-label">Register</div></div>
-      <div class="step done"><div class="step-dot">✓</div><div class="step-label">Payment</div></div>
-      <div class="step active"><div class="step-dot">3</div><div class="step-label">Documents</div></div>
-      <div class="step"><div class="step-dot">4</div><div class="step-label">Complete</div></div>
-    </div>
+  <div id="gateScreen"
+    class="fixed inset-0 bg-gray-100/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
+    <h2 class="text-2xl font-bold tracking-tight text-gray-900 mb-2">Verifying Session...</h2>
+    <div id="gateMsg" class="hidden text-red-500 font-medium mb-6"></div>
+    <a href="/payment.html" id="gateBtn"
+      class="hidden px-6 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-all">Return
+      to Registration</a>
   </div>
 
-  <div class="banner hidden" id="codBanner">
-    ⚠️ COD Pending — Your documents will be held in review until the LKR 4,500 fee is collected.
-  </div>
+  <div class="hidden max-w-3xl mx-auto space-y-6 relative z-10" id="mainApp">
 
-  <div class="global-err" id="formGlobalErr"></div>
-
-  <form id="docForm" novalidate>
-    
-    <!-- Section 1 -->
-    <div class="card">
-      <h2 class="title">Personal Details</h2>
-      <div class="row">
-        <div class="col field">
-          <label>First Name</label><input type="text" id="firstName" required>
+    <div class="flex items-center justify-between mb-8 px-2">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-bold shadow-sm">E
         </div>
-        <div class="col field">
-          <label>Last Name</label><input type="text" id="lastName" required>
-        </div>
+        <h1 class="text-xl font-bold tracking-tight">Submit Documents</h1>
       </div>
-      <div class="field">
-        <label>Residential Address</label><textarea id="address" required></textarea>
-      </div>
-      <div class="row">
-        <div class="col field">
-          <label>City</label><input type="text" id="city" required>
-        </div>
-        <div class="col field">
-          <label>Province</label>
-          <select id="province" required>
-            <option value="">Select Province</option>
-            <option>Western</option><option>Central</option><option>Southern</option>
-            <option>North Western</option><option>Sabaragamuwa</option><option>Eastern</option>
-            <option>Uva</option><option>North Central</option><option>Northern</option>
-          </select>
-        </div>
-        <div class="col field">
-          <label>Postal Code</label><input type="text" id="postal">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col field">
-          <label>Date of Birth</label>
-          <input type="date" id="dob" required max="" onfocus="this.max=new Date(new Date().setFullYear(new Date().getFullYear()-18)).toISOString().split('T')[0]">
-        </div>
-        <div class="col field">
-          <label>Gender</label>
-          <select id="gender" required>
-            <option value="">Select Gender</option>
-            <option>Male</option><option>Female</option><option>Prefer not to say</option>
-          </select>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col field">
-          <label>NIC Number</label><input type="text" id="nic" required>
-        </div>
-        <div class="col field">
-          <label>Phone Number</label><input type="tel" id="phone" readonly style="opacity:0.7">
-        </div>
+      <div
+        class="flex items-center gap-2 text-sm font-medium text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+        Step <span class="text-black font-bold">3</span> of 4
       </div>
     </div>
 
-    <!-- Section 2 -->
-    <div class="card">
-      <h2 class="title">Passport Details</h2>
-      <div class="row">
-        <div class="col field">
-          <label>Passport Number</label><input type="text" id="passportNumber" required>
+    <div id="codBanner"
+      class="hidden bg-yellow-50 border border-yellow-200 rounded-2xl p-4 flex gap-3 items-center text-sm text-yellow-800 font-medium">
+      <i data-lucide="info" class="w-5 h-5 flex-shrink-0 text-yellow-600"></i>
+      COD Pending. Your documents will be held in review until the LKR 4,500 fee is collected.
+    </div>
+
+    <div id="formGlobalErr"
+      class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-600 font-medium"></div>
+
+    <form id="docForm" novalidate class="space-y-6">
+
+      <div class="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <h2 class="text-xl font-bold tracking-tight mb-6 flex items-center gap-2">
+          <i data-lucide="user" class="w-5 h-5 text-gray-400"></i> Personal Details
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+            <input type="text" id="firstName" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+            <input type="text" id="lastName" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
         </div>
-        <div class="col field">
-          <label>Issuing Country</label><input type="text" id="passportCountry" value="Sri Lanka" required>
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Residential Address</label>
+          <textarea id="address" required
+            class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none min-h-[100px] resize-y"></textarea>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">City</label>
+            <input type="text" id="city" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Province</label>
+            <select id="province" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none appearance-none">
+              <option value="">Select Province</option>
+              <option>Western</option>
+              <option>Central</option>
+              <option>Southern</option>
+              <option>North Western</option>
+              <option>Sabaragamuwa</option>
+              <option>Eastern</option>
+              <option>Uva</option>
+              <option>North Central</option>
+              <option>Northern</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+            <input type="text" id="postal"
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+            <input type="date" id="dob" required
+              onfocus="this.max=new Date(new Date().setFullYear(new Date().getFullYear()-18)).toISOString().split('T')[0]"
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+            <select id="gender" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none appearance-none">
+              <option value="">Select Gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">NIC Number</label>
+            <input type="text" id="nic" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+            <input type="tel" id="phone" readonly
+              class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm text-gray-500 cursor-not-allowed outline-none">
+          </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col field">
-          <label>Date of Issue</label><input type="date" id="passportIssue" required>
+
+      <div class="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <h2 class="text-xl font-bold tracking-tight mb-6 flex items-center gap-2">
+          <i data-lucide="plane" class="w-5 h-5 text-gray-400"></i> Passport Details
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Passport Number</label>
+            <input type="text" id="passportNumber" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Issuing Country</label>
+            <input type="text" id="passportCountry" value="Sri Lanka" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
         </div>
-        <div class="col field">
-          <label>Date of Expiry</label>
-          <input type="date" id="passportExpiry" required>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Issue</label>
+            <input type="date" id="passportIssue" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Expiry</label>
+            <input type="date" id="passportExpiry" required
+              class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none">
+          </div>
         </div>
-      </div>
-      <div class="field">
-        <label>Preferred Job Category</label>
-        <select id="jobCategory" required>
-          <option value="">Select Category</option>
-          <optgroup label="Categories">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Preferred Job Category</label>
+          <select id="jobCategory" required
+            class="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm focus:bg-white focus:border-gray-300 focus:ring-4 focus:ring-gray-100 outline-none appearance-none">
+            <option value="">Select Category</option>
             <option>Hospitality & Tourism</option>
             <option>Healthcare</option>
             <option>Construction & Engineering</option>
             <option>IT & Business</option>
             <option>Education</option>
             <option>Other</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-
-    <!-- Section 3 -->
-    <div class="card">
-      <h2 class="title">Document Uploads</h2>
-      <p class="sub">Please ensure all files are clear and readable. Max size 10MB.</p>
-      
-      <div class="upload-grid" style="margin-bottom:20px">
-        <div class="dropzone" id="dz-passportUrl" role="button" tabindex="0" aria-label="Upload Passport Copy">
-          <div class="dz-icon">🛂</div>
-          <div class="dz-title">Passport Copy</div>
-          <div class="dz-sub">PDF, JPG, PNG (Required)</div>
-          <input type="file" class="dz-file" id="file-passportUrl" accept=".pdf,.jpg,.jpeg,.png">
-          <div class="file-name"></div>
-        </div>
-        <div class="dropzone" id="dz-birthCertUrl" role="button" tabindex="0" aria-label="Upload Birth Certificate">
-          <div class="dz-icon">📜</div>
-          <div class="dz-title">Birth Certificate</div>
-          <div class="dz-sub">PDF, JPG, PNG (Required)</div>
-          <input type="file" class="dz-file" id="file-birthCertUrl" accept=".pdf,.jpg,.jpeg,.png">
-          <div class="file-name"></div>
-        </div>
-        <div class="dropzone" id="dz-nicUrl" role="button" tabindex="0" aria-label="Upload NIC Copy">
-          <div class="dz-icon">🪪</div>
-          <div class="dz-title">NIC Copy</div>
-          <div class="dz-sub">PDF, JPG, PNG (Required)</div>
-          <input type="file" class="dz-file" id="file-nicUrl" accept=".pdf,.jpg,.jpeg,.png">
-          <div class="file-name"></div>
-        </div>
-        <div class="dropzone" id="dz-photoUrl" role="button" tabindex="0" aria-label="Upload Passport Photo">
-          <div class="dz-icon">📸</div>
-          <div class="dz-title">Passport Photo</div>
-          <div class="dz-sub">JPG, PNG only (Max 5MB)</div>
-          <input type="file" class="dz-file" id="file-photoUrl" accept=".jpg,.jpeg,.png">
-          <div class="file-name"></div>
+          </select>
         </div>
       </div>
 
-      <div class="dropzone" id="dz-extraUrls" role="button" tabindex="0" aria-label="Upload Additional Documents">
-        <div class="dz-icon">📎</div>
-        <div class="dz-title">Additional Documents (Optional)</div>
-        <div class="dz-sub">CV, Certificates, etc.</div>
-        <input type="file" class="dz-file" id="file-extraUrls" multiple>
-      </div>
-      <div id="extraFilesList"></div>
-    </div>
+      <div class="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
+            <i data-lucide="file-up" class="w-5 h-5 text-gray-400"></i> Document Uploads
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">Please ensure all files are clear and readable. Max size 10MB.</p>
+        </div>
 
-    <!-- Consents -->
-    <div class="card">
-      <h2 class="title" style="font-size:20px;margin-bottom:16px">Declaration</h2>
-      <div class="check-wrap">
-        <input type="checkbox" id="consent1" required>
-        <label for="consent1" class="check-label">I consent to Employement storing and processing my personal data in accordance with the Privacy Policy.</label>
-      </div>
-      <div class="check-wrap">
-        <input type="checkbox" id="consent2" required>
-        <label for="consent2" class="check-label">I confirm that all information and documents provided are genuine and belong to me.</label>
-      </div>
-      <div class="check-wrap">
-        <input type="checkbox" id="consent3">
-        <label for="consent3" class="check-label">I agree to my profile being shared with partner companies for placement opportunities. (Optional)</label>
-      </div>
-    </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div
+            class="dropzone relative border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-6 text-center cursor-pointer group"
+            id="dz-passportUrl" tabindex="0">
+            <div
+              class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center mx-auto mb-3 border border-gray-100 text-gray-700 group-hover:scale-105 transition-transform">
+              <i data-lucide="book" class="w-6 h-6"></i>
+            </div>
+            <div class="font-semibold text-sm text-gray-900 mb-1">Passport Copy</div>
+            <div class="text-xs text-gray-500">PDF, JPG, PNG (Required)</div>
+            <input type="file" class="hidden" id="file-passportUrl" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="file-name text-xs font-bold text-black mt-3 break-all"></div>
+          </div>
+          <div
+            class="dropzone relative border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-6 text-center cursor-pointer group"
+            id="dz-birthCertUrl" tabindex="0">
+            <div
+              class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center mx-auto mb-3 border border-gray-100 text-gray-700 group-hover:scale-105 transition-transform">
+              <i data-lucide="award" class="w-6 h-6"></i>
+            </div>
+            <div class="font-semibold text-sm text-gray-900 mb-1">Birth Certificate</div>
+            <div class="text-xs text-gray-500">PDF, JPG, PNG (Required)</div>
+            <input type="file" class="hidden" id="file-birthCertUrl" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="file-name text-xs font-bold text-black mt-3 break-all"></div>
+          </div>
+          <div
+            class="dropzone relative border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-6 text-center cursor-pointer group"
+            id="dz-nicUrl" tabindex="0">
+            <div
+              class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center mx-auto mb-3 border border-gray-100 text-gray-700 group-hover:scale-105 transition-transform">
+              <i data-lucide="credit-card" class="w-6 h-6"></i>
+            </div>
+            <div class="font-semibold text-sm text-gray-900 mb-1">NIC Copy</div>
+            <div class="text-xs text-gray-500">PDF, JPG, PNG (Required)</div>
+            <input type="file" class="hidden" id="file-nicUrl" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="file-name text-xs font-bold text-black mt-3 break-all"></div>
+          </div>
+          <div
+            class="dropzone relative border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-6 text-center cursor-pointer group"
+            id="dz-photoUrl" tabindex="0">
+            <div
+              class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center mx-auto mb-3 border border-gray-100 text-gray-700 group-hover:scale-105 transition-transform">
+              <i data-lucide="camera" class="w-6 h-6"></i>
+            </div>
+            <div class="font-semibold text-sm text-gray-900 mb-1">Passport Photo</div>
+            <div class="text-xs text-gray-500">JPG, PNG only (Max 5MB)</div>
+            <input type="file" class="hidden" id="file-photoUrl" accept=".jpg,.jpeg,.png">
+            <div class="file-name text-xs font-bold text-black mt-3 break-all"></div>
+          </div>
+        </div>
 
-    <div style="text-align:right">
-      <button type="submit" class="btn" id="submitBtn">Submit Application 🚀</button>
-    </div>
-  </form>
-</div>
+        <div
+          class="dropzone relative border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl p-6 text-center cursor-pointer group"
+          id="dz-extraUrls" tabindex="0">
+          <div
+            class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center mx-auto mb-3 border border-gray-100 text-gray-700 group-hover:scale-105 transition-transform">
+            <i data-lucide="paperclip" class="w-6 h-6"></i>
+          </div>
+          <div class="font-semibold text-sm text-gray-900 mb-1">Additional Documents (Optional)</div>
+          <div class="text-xs text-gray-500">CV, Certificates, etc.</div>
+          <input type="file" class="hidden" id="file-extraUrls" multiple>
+        </div>
+        <div id="extraFilesList" class="mt-3 flex flex-col gap-2"></div>
+      </div>
 
-<!-- Overlay -->
-<div id="loadingOverlay" class="hidden">
-  <div class="spinner"></div>
-  <div id="loadingText">Processing...</div>
-</div>
+      <div class="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <h2 class="text-xl font-bold tracking-tight mb-5 flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-5 h-5 text-gray-400"></i> Declaration
+        </h2>
+        <div class="space-y-4">
+          <label class="flex items-start gap-3 cursor-pointer group">
+            <input type="checkbox" id="consent1" required
+              class="w-5 h-5 mt-0.5 rounded border-gray-300 text-black focus:ring-black accent-black">
+            <span class="text-sm text-gray-600 leading-relaxed group-hover:text-gray-900 transition-colors">I consent to
+              Employement storing and processing my personal data in accordance with the Privacy Policy.</span>
+          </label>
+          <label class="flex items-start gap-3 cursor-pointer group">
+            <input type="checkbox" id="consent2" required
+              class="w-5 h-5 mt-0.5 rounded border-gray-300 text-black focus:ring-black accent-black">
+            <span class="text-sm text-gray-600 leading-relaxed group-hover:text-gray-900 transition-colors">I confirm
+              that all information and documents provided are genuine and belong to me.</span>
+          </label>
+          <label class="flex items-start gap-3 cursor-pointer group">
+            <input type="checkbox" id="consent3"
+              class="w-5 h-5 mt-0.5 rounded border-gray-300 text-black focus:ring-black accent-black">
+            <span class="text-sm text-gray-600 leading-relaxed group-hover:text-gray-900 transition-colors">I agree to
+              my profile being shared with partner companies for placement opportunities. (Optional)</span>
+          </label>
+        </div>
+      </div>
 
-<!-- Success -->
-<div id="successScreen" class="hidden">
-  <div style="font-size:64px;margin-bottom:20px">🎉</div>
-  <h1 class="title">Application Submitted!</h1>
-  <p class="sub" style="font-size:18px">Your reference number is:</p>
-  <div style="background:rgba(201,168,76,.15);border:2px dashed var(--gold);padding:16px 32px;border-radius:12px;font-size:32px;font-weight:700;color:var(--gold);margin-bottom:30px;letter-spacing:2px" id="refDisplay">
-    EMP-LK-XXXXXX
+      <div class="flex justify-end pt-2 pb-10">
+        <button type="submit" id="submitBtn"
+          class="px-8 py-4 bg-black hover:bg-gray-800 text-white font-bold text-sm rounded-2xl transition-all shadow-md flex items-center gap-2 active:scale-95">
+          Submit Application <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </form>
   </div>
-  <p style="color:var(--muted);max-width:400px;line-height:1.6">
-    We have securely received your documents. Our team will review your application and contact you shortly.
-  </p>
-</div>
 
-<script>
-let jwtToken = sessionStorage.getItem('emp_token') || new URLSearchParams(window.location.search).get('token');
-let fileRegistry = {
-  passportUrl: null, birthCertUrl: null, nicUrl: null, photoUrl: null, extraUrls: []
-};
+  <div id="loadingOverlay"
+    class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+    <div class="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
+    <div id="loadingText" class="text-lg font-bold tracking-tight text-gray-900">Processing...</div>
+  </div>
 
-// ── Gate Check ─────────────────────────────────────────────────────────────
-async function checkAuth() {
-  if (!jwtToken) return showGate('Payment or Token Required');
-  
-  if (new URLSearchParams(window.location.search).get('token')) {
-    sessionStorage.setItem('emp_token', jwtToken);
-    window.history.replaceState({}, document.title, '/form2.html');
-  }
+  <div id="successScreen"
+    class="hidden fixed inset-0 bg-gray-100 z-50 flex flex-col items-center justify-center p-6 text-center">
+    <div class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100 max-w-lg w-full animate-fadeUpFast">
+      <div class="w-20 h-20 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="check-circle" class="w-10 h-10"></i>
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 mb-2">Application Submitted</h1>
+      <p class="text-gray-500 mb-6">Your reference number is:</p>
 
-  try {
-    const res = await fetch('/api/auth/verify', {
-      headers: { 'Authorization': `Bearer ${jwtToken}` }
-    });
-    const data = await res.json();
-    if (!data.valid) throw new Error();
-    
-    document.getElementById('gateScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    
-    if (data.payload.codPending) {
-      document.getElementById('codBanner').classList.remove('hidden');
-    }
-    
-    // Pre-fill
-    if(data.payload.name) {
-      const parts = data.payload.name.split(' ');
-      document.getElementById('firstName').value = parts[0];
-      if(parts.length > 1) document.getElementById('lastName').value = parts.slice(1).join(' ');
-    }
-    if(data.payload.phone) document.getElementById('phone').value = data.payload.phone;
+      <div id="refDisplay"
+        class="bg-gray-50 border border-gray-200 py-4 px-6 rounded-2xl text-2xl font-black text-gray-900 tracking-widest mb-6">
+        EMP-LK-XXXXXX
+      </div>
 
-  } catch {
-    showGate('Session expired or invalid token');
-  }
-}
-
-function showGate(msg) {
-  document.querySelector('#gateScreen .spinner').style.display = 'none';
-  document.querySelector('#gateScreen h2').textContent = 'Access Denied';
-  document.getElementById('gateMsg').textContent = msg;
-  document.getElementById('gateMsg').style.display = 'block';
-  document.getElementById('gateBtn').classList.remove('hidden');
-}
-
-checkAuth();
-
-// ── File Handlers ──────────────────────────────────────────────────────────
-['passportUrl', 'birthCertUrl', 'nicUrl', 'photoUrl'].forEach(key => {
-  const inp = document.getElementById(`file-${key}`);
-  const dz  = document.getElementById(`dz-${key}`);
-  const nm  = dz.querySelector('.file-name');
-
-  const openPicker = () => inp.click();
-
-  dz.addEventListener('click', (e) => {
-    if (e.target === inp) return;
-    openPicker();
-  });
-  dz.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openPicker();
-    }
-  });
-
-  inp.addEventListener('change', (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (f.size > (key === 'photoUrl' ? 5 : 10) * 1024 * 1024) {
-      alert(`File too large`); return;
-    }
-    fileRegistry[key] = f;
-    dz.classList.add('has-file');
-    dz.classList.remove('invalid');
-    nm.textContent = `✓ ${f.name}`;
-  });
-
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    dz.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
-  });
-  dz.addEventListener('dragover', () => dz.classList.add('dragover'));
-  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', (e) => {
-    dz.classList.remove('dragover');
-    if(e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; inp.dispatchEvent(new Event('change')); }
-  });
-});
-
-const extraInp = document.getElementById('file-extraUrls');
-const extraList = document.getElementById('extraFilesList');
-const extraDz = document.getElementById('dz-extraUrls');
-
-extraDz.addEventListener('click', (e) => {
-  if (e.target === extraInp) return;
-  extraInp.click();
-});
-extraDz.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    extraInp.click();
-  }
-});
-
-extraInp.addEventListener('change', (e) => {
-  Array.from(e.target.files).forEach(f => {
-    if (f.size > 10 * 1024 * 1024) return alert(`${f.name} is too large`);
-    fileRegistry.extraUrls.push(f);
-  });
-  renderExtra();
-  extraInp.value = '';
-});
-
-function renderExtra() {
-  extraList.innerHTML = fileRegistry.extraUrls.map((f, i) => `
-    <div class="extra-item">
-      <span>📎 ${f.name}</span>
-      <button type="button" class="btn-remove" onclick="removeExtra(${i})">✕ Remove</button>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        We have securely received your documents. Our team will review your application and contact you shortly.
+      </p>
     </div>
-  `).join('');
-}
-window.removeExtra = (i) => { fileRegistry.extraUrls.splice(i, 1); renderExtra(); };
+  </div>
 
-// ── Form Submit ────────────────────────────────────────────────────────────
-document.getElementById('docForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errBox = document.getElementById('formGlobalErr');
-  errBox.classList.remove('show');
-  
-  // Basic HTML5 Validity
-  if (!e.target.checkValidity()) {
-    errBox.textContent = 'Please fill all required fields correctly.';
-    errBox.classList.add('show');
-    return;
-  }
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
 
-  // Validate files
-  let fileErr = false;
-  ['passportUrl', 'birthCertUrl', 'nicUrl', 'photoUrl'].forEach(k => {
-    const dz = document.getElementById(`dz-${k}`);
-    if (!fileRegistry[k]) { dz.classList.add('invalid'); fileErr = true; }
-  });
-  if (fileErr) {
-    errBox.textContent = 'Please upload all required documents.';
-    errBox.classList.add('show');
-    return;
-  }
+    let jwtToken = sessionStorage.getItem('emp_token') || new URLSearchParams(window.location.search).get('token');
+    let fileRegistry = { passportUrl: null, birthCertUrl: null, nicUrl: null, photoUrl: null, extraUrls: [] };
 
-  const setLoad = (text) => {
-    document.getElementById('loadingOverlay').classList.remove('hidden');
-    document.getElementById('loadingText').textContent = text;
-  };
+    // ── Gate Check ─────────────────────────────────────────────────────────────
+    async function checkAuth() {
+      if (!jwtToken) return showGate('Payment or Token Required');
 
-  try {
-    // 1. Upload files
-    const uploadFile = async (file, label) => {
-      setLoad(`Uploading ${label}...`);
-      const fd = new FormData(); fd.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${jwtToken}` },
-        body: fd
+      if (new URLSearchParams(window.location.search).get('token')) {
+        sessionStorage.setItem('emp_token', jwtToken);
+        window.history.replaceState({}, document.title, '/form2.html');
+      }
+
+      try {
+        const res = await fetch('/api/auth/verify', { headers: { 'Authorization': `Bearer ${jwtToken}` } });
+        const data = await res.json();
+        if (!data.valid) throw new Error();
+
+        document.getElementById('gateScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+
+        if (data.payload.codPending) {
+          document.getElementById('codBanner').classList.remove('hidden');
+          document.getElementById('codBanner').classList.add('flex');
+        }
+
+        if (data.payload.name) {
+          const parts = data.payload.name.split(' ');
+          document.getElementById('firstName').value = parts[0];
+          if (parts.length > 1) document.getElementById('lastName').value = parts.slice(1).join(' ');
+        }
+        if (data.payload.phone) document.getElementById('phone').value = data.payload.phone;
+
+      } catch {
+        showGate('Session expired or invalid token');
+      }
+    }
+
+    function showGate(msg) {
+      document.querySelector('#gateScreen .animate-spin').style.display = 'none';
+      document.querySelector('#gateScreen h2').textContent = 'Access Denied';
+      document.getElementById('gateMsg').textContent = msg;
+      document.getElementById('gateMsg').classList.remove('hidden');
+      document.getElementById('gateBtn').classList.remove('hidden');
+    }
+
+    checkAuth();
+
+    // ── File Handlers ──────────────────────────────────────────────────────────
+    ['passportUrl', 'birthCertUrl', 'nicUrl', 'photoUrl'].forEach(key => {
+      const inp = document.getElementById(`file-${key}`);
+      const dz = document.getElementById(`dz-${key}`);
+      const nm = dz.querySelector('.file-name');
+
+      const openPicker = () => inp.click();
+
+      dz.addEventListener('click', (e) => { if (e.target === inp) return; openPicker(); });
+      dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
+
+      inp.addEventListener('change', (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        if (f.size > (key === 'photoUrl' ? 5 : 10) * 1024 * 1024) { alert(`File too large`); return; }
+        fileRegistry[key] = f;
+        dz.classList.add('has-file');
+        dz.classList.remove('invalid-dz');
+        nm.innerHTML = `<i data-lucide="check" class="w-3 h-3 inline"></i> ${f.name}`;
+        lucide.createIcons();
       });
-      const data = await res.json().catch(() => ({}));
-      if(!res.ok) {
-        throw new Error(data.error || `Failed to upload ${label}`);
-      }
-      const uploadedUrl = data.fileUrl || data.driveViewUrl || data.url;
-      if (!uploadedUrl) {
-        throw new Error(`${label} upload completed, but the server did not return a file URL`);
-      }
-      return uploadedUrl;
-    };
 
-    const payload = {};
-    payload.passportUrl = await uploadFile(fileRegistry.passportUrl, 'Passport Copy');
-    payload.birthCertUrl = await uploadFile(fileRegistry.birthCertUrl, 'Birth Certificate');
-    payload.nicUrl = await uploadFile(fileRegistry.nicUrl, 'NIC Copy');
-    payload.photoUrl = await uploadFile(fileRegistry.photoUrl, 'Passport Photo');
-    
-    payload.extraUrls = [];
-    for(let i=0; i<fileRegistry.extraUrls.length; i++){
-      payload.extraUrls.push(await uploadFile(fileRegistry.extraUrls[i], `Extra Document ${i+1}`));
-    }
-
-    if (!payload.passportUrl || !payload.birthCertUrl || !payload.nicUrl || !payload.photoUrl) {
-      throw new Error('One or more document uploads finished without a saved file reference');
-    }
-
-    // 2. Submit Form
-    setLoad('Saving application data...');
-    const fields = ['firstName','lastName','address','city','province','postal','dob','gender','nic','phone','passportNumber','passportCountry','passportIssue','passportExpiry','jobCategory'];
-    fields.forEach(f => payload[f] = document.getElementById(f).value);
-
-    const res = await fetch('/api/submit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`
-      },
-      body: JSON.stringify(payload)
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        dz.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); });
+      });
+      dz.addEventListener('dragover', () => dz.classList.add('dragover'));
+      dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+      dz.addEventListener('drop', (e) => {
+        dz.classList.remove('dragover');
+        if (e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; inp.dispatchEvent(new Event('change')); }
+      });
     });
 
-    if(!res.ok) throw new Error((await res.json()).error || 'Submission failed');
-    const { refNumber } = await res.json();
+    const extraInp = document.getElementById('file-extraUrls');
+    const extraList = document.getElementById('extraFilesList');
+    const extraDz = document.getElementById('dz-extraUrls');
 
-    // Success
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('successScreen').classList.remove('hidden');
-    document.getElementById('refDisplay').textContent = refNumber;
-    sessionStorage.removeItem('emp_token');
+    extraDz.addEventListener('click', (e) => { if (e.target === extraInp) return; extraInp.click(); });
+    extraDz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); extraInp.click(); } });
 
-  } catch (err) {
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    errBox.textContent = err.message;
-    errBox.classList.add('show');
-    window.scrollTo(0,0);
-  }
-});
-</script>
+    extraInp.addEventListener('change', (e) => {
+      Array.from(e.target.files).forEach(f => {
+        if (f.size > 10 * 1024 * 1024) return alert(`${f.name} is too large`);
+        fileRegistry.extraUrls.push(f);
+      });
+      renderExtra();
+      extraInp.value = '';
+    });
+
+    function renderExtra() {
+      extraList.innerHTML = fileRegistry.extraUrls.map((f, i) => `
+        <div class="flex justify-between items-center px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm shadow-sm">
+          <span class="truncate font-medium text-gray-700 pr-4">${f.name}</span>
+          <button type="button" class="text-red-500 hover:text-red-700 font-semibold text-xs flex-shrink-0" onclick="removeExtra(${i})">Remove</button>
+        </div>
+      `).join('');
+    }
+    window.removeExtra = (i) => { fileRegistry.extraUrls.splice(i, 1); renderExtra(); };
+
+    // ── Form Submit ────────────────────────────────────────────────────────────
+    document.getElementById('docForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('formGlobalErr');
+      errBox.classList.add('hidden');
+
+      // Clear previous HTML5 validation highlights visually
+      document.querySelectorAll('input, select, textarea').forEach(el => el.classList.remove('invalid-input'));
+
+      if (!e.target.checkValidity()) {
+        errBox.textContent = 'Please fill all required fields correctly.';
+        errBox.classList.remove('hidden');
+
+        // Highlight invalid fields natively
+        const fields = e.target.querySelectorAll('input:invalid, select:invalid, textarea:invalid');
+        fields.forEach(f => f.classList.add('invalid-input'));
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      let fileErr = false;
+      ['passportUrl', 'birthCertUrl', 'nicUrl', 'photoUrl'].forEach(k => {
+        const dz = document.getElementById(`dz-${k}`);
+        if (!fileRegistry[k]) { dz.classList.add('invalid-dz'); fileErr = true; }
+      });
+      if (fileErr) {
+        errBox.textContent = 'Please upload all required documents.';
+        errBox.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const setLoad = (text) => {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        document.getElementById('loadingOverlay').classList.add('flex');
+        document.getElementById('loadingText').textContent = text;
+      };
+
+      try {
+        const uploadFile = async (file, label) => {
+          setLoad(`Uploading ${label}...`);
+          const fd = new FormData(); fd.append('file', file);
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwtToken}` },
+            body: fd
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `Failed to upload ${label}`);
+          const uploadedUrl = data.fileUrl || data.driveViewUrl || data.url;
+          if (!uploadedUrl) throw new Error(`${label} upload completed, but server did not return URL`);
+          return uploadedUrl;
+        };
+
+        const payload = {};
+        payload.passportUrl = await uploadFile(fileRegistry.passportUrl, 'Passport Copy');
+        payload.birthCertUrl = await uploadFile(fileRegistry.birthCertUrl, 'Birth Certificate');
+        payload.nicUrl = await uploadFile(fileRegistry.nicUrl, 'NIC Copy');
+        payload.photoUrl = await uploadFile(fileRegistry.photoUrl, 'Passport Photo');
+
+        payload.extraUrls = [];
+        for (let i = 0; i < fileRegistry.extraUrls.length; i++) {
+          payload.extraUrls.push(await uploadFile(fileRegistry.extraUrls[i], `Extra Document ${i + 1}`));
+        }
+
+        setLoad('Saving application data...');
+        const fields = ['firstName', 'lastName', 'address', 'city', 'province', 'postal', 'dob', 'gender', 'nic', 'phone', 'passportNumber', 'passportCountry', 'passportIssue', 'passportExpiry', 'jobCategory'];
+        fields.forEach(f => payload[f] = document.getElementById(f).value);
+
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken}` },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error((await res.json()).error || 'Submission failed');
+        const { refNumber } = await res.json();
+
+        // Success
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+        document.getElementById('successScreen').classList.remove('hidden');
+        document.getElementById('refDisplay').textContent = refNumber;
+        sessionStorage.removeItem('emp_token');
+
+      } catch (err) {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        errBox.textContent = err.message;
+        errBox.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  </script>
 </body>
+
 </html>
