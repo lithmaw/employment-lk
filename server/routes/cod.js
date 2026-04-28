@@ -7,17 +7,22 @@ const { createOrder } = require('../services/db');
 // ── POST /api/cod/register ────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
-    if (!name || !email || !phone) return res.status(400).json({ error: 'Missing fields' });
-
-    const parts     = name.trim().split(' ');
-    const firstName = parts[0];
-    const lastName  = parts.slice(1).join(' ') || parts[0];
+    const {
+      name,
+      firstName: rawFirstName,
+      lastName: rawLastName,
+      email,
+      phone
+    } = req.body;
+    const firstName = rawFirstName?.trim() || name?.trim().split(/\s+/)[0] || '';
+    const lastName = rawLastName?.trim() || name?.trim().split(/\s+/).slice(1).join(' ') || '';
+    const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+    if (!firstName || !lastName || !email || !phone) return res.status(400).json({ error: 'Missing fields' });
     const orderId   = 'EMP-' + crypto.randomBytes(8).toString('hex').toUpperCase();
 
     try {
       await createOrder({
-        orderId, name, firstName, lastName, email, phone,
+        orderId, name: fullName, firstName, lastName, email, phone,
         status: 'Pending COD',
         createdAt: new Date().toISOString(),
       });
@@ -26,7 +31,7 @@ router.post('/register', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { orderId, name, email, phone, codPending: true },
+      { orderId, name: fullName, firstName, lastName, email, phone, codPending: true },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );

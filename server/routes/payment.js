@@ -8,19 +8,24 @@ const { createOrder, getOrder, updateOrder } = require('../services/db');
 // ── POST /api/payment/initiate ─────────────────────────────────────────────
 router.post('/initiate', async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
-    if (!name || !email || !phone) return res.status(400).json({ error: 'Missing fields' });
-
-    const parts     = name.trim().split(' ');
-    const firstName = parts[0];
-    const lastName  = parts.slice(1).join(' ') || parts[0];
+    const {
+      name,
+      firstName: rawFirstName,
+      lastName: rawLastName,
+      email,
+      phone
+    } = req.body;
+    const firstName = rawFirstName?.trim() || name?.trim().split(/\s+/)[0] || '';
+    const lastName = rawLastName?.trim() || name?.trim().split(/\s+/).slice(1).join(' ') || '';
+    const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+    if (!firstName || !lastName || !email || !phone) return res.status(400).json({ error: 'Missing fields' });
 
     const orderId    = 'EMP-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const amount     = '4500.00';
     const currency   = 'LKR';
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
 
-    await createOrder({ orderId, name, firstName, lastName, email, phone, status: 'Pending', createdAt: new Date().toISOString() });
+    await createOrder({ orderId, name: fullName, firstName, lastName, email, phone, status: 'Pending', createdAt: new Date().toISOString() });
 
     const hash   = generateHash(merchantId, orderId, amount, currency, process.env.PAYHERE_MERCHANT_SECRET);
 
@@ -83,7 +88,15 @@ router.get('/return', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { orderId: order.orderId, name: order.name, email: order.email, phone: order.phone, paid: true },
+      {
+        orderId: order.orderId,
+        name: order.name,
+        firstName: order.firstName,
+        lastName: order.lastName,
+        email: order.email,
+        phone: order.phone,
+        paid: true
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -112,7 +125,15 @@ router.get('/test-success', async (req, res) => {
     });
 
     const token = jwt.sign(
-      { orderId, name: 'Test User', email: 'test@example.com', phone: '0712345678', paid: true },
+      {
+        orderId,
+        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        phone: '0712345678',
+        paid: true
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
