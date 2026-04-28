@@ -269,28 +269,28 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
       <p class="sub">Please ensure all files are clear and readable. Max size 10MB.</p>
       
       <div class="upload-grid" style="margin-bottom:20px">
-        <div class="dropzone" id="dz-passportUrl">
+        <div class="dropzone" id="dz-passportUrl" role="button" tabindex="0" aria-label="Upload Passport Copy">
           <div class="dz-icon">🛂</div>
           <div class="dz-title">Passport Copy</div>
           <div class="dz-sub">PDF, JPG, PNG (Required)</div>
           <input type="file" class="dz-file" id="file-passportUrl" accept=".pdf,.jpg,.jpeg,.png">
           <div class="file-name"></div>
         </div>
-        <div class="dropzone" id="dz-birthCertUrl">
+        <div class="dropzone" id="dz-birthCertUrl" role="button" tabindex="0" aria-label="Upload Birth Certificate">
           <div class="dz-icon">📜</div>
           <div class="dz-title">Birth Certificate</div>
           <div class="dz-sub">PDF, JPG, PNG (Required)</div>
           <input type="file" class="dz-file" id="file-birthCertUrl" accept=".pdf,.jpg,.jpeg,.png">
           <div class="file-name"></div>
         </div>
-        <div class="dropzone" id="dz-nicUrl">
+        <div class="dropzone" id="dz-nicUrl" role="button" tabindex="0" aria-label="Upload NIC Copy">
           <div class="dz-icon">🪪</div>
           <div class="dz-title">NIC Copy</div>
           <div class="dz-sub">PDF, JPG, PNG (Required)</div>
           <input type="file" class="dz-file" id="file-nicUrl" accept=".pdf,.jpg,.jpeg,.png">
           <div class="file-name"></div>
         </div>
-        <div class="dropzone" id="dz-photoUrl">
+        <div class="dropzone" id="dz-photoUrl" role="button" tabindex="0" aria-label="Upload Passport Photo">
           <div class="dz-icon">📸</div>
           <div class="dz-title">Passport Photo</div>
           <div class="dz-sub">JPG, PNG only (Max 5MB)</div>
@@ -299,7 +299,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
         </div>
       </div>
 
-      <div class="dropzone" id="dz-extraUrls">
+      <div class="dropzone" id="dz-extraUrls" role="button" tabindex="0" aria-label="Upload Additional Documents">
         <div class="dz-icon">📎</div>
         <div class="dz-title">Additional Documents (Optional)</div>
         <div class="dz-sub">CV, Certificates, etc.</div>
@@ -408,6 +408,19 @@ checkAuth();
   const dz  = document.getElementById(`dz-${key}`);
   const nm  = dz.querySelector('.file-name');
 
+  const openPicker = () => inp.click();
+
+  dz.addEventListener('click', (e) => {
+    if (e.target === inp) return;
+    openPicker();
+  });
+  dz.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openPicker();
+    }
+  });
+
   inp.addEventListener('change', (e) => {
     const f = e.target.files[0];
     if (!f) return;
@@ -433,6 +446,19 @@ checkAuth();
 
 const extraInp = document.getElementById('file-extraUrls');
 const extraList = document.getElementById('extraFilesList');
+const extraDz = document.getElementById('dz-extraUrls');
+
+extraDz.addEventListener('click', (e) => {
+  if (e.target === extraInp) return;
+  extraInp.click();
+});
+extraDz.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    extraInp.click();
+  }
+});
+
 extraInp.addEventListener('change', (e) => {
   Array.from(e.target.files).forEach(f => {
     if (f.size > 10 * 1024 * 1024) return alert(`${f.name} is too large`);
