@@ -89,7 +89,7 @@ function mapApplicationToRow(data) {
     passport_expiry: data.passportExpiry,
     job_category: data.jobCategory,
     passport_url: data.passportUrl,
-    birth_cert_url: data.birthCertUrl,
+    birth_cert_url: data.cvUrl || data.birthCertUrl,
     nic_url: data.nicUrl,
     photo_url: data.photoUrl,
     extra_urls: Array.isArray(data.extraUrls) ? data.extraUrls : [],

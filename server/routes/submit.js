@@ -33,14 +33,14 @@ router.post('/', auth, async (req, res) => {
       extraUrls,
     } = body;
     const passportUrl = pick('passportUrl', 'passporturl', 'passport_url');
-    const birthCertUrl = pick('birthCertUrl', 'birthcerturl', 'birth_cert_url');
+    const cvUrl = pick('cvUrl', 'cvurl', 'cv_url', 'birthCertUrl', 'birthcerturl', 'birth_cert_url');
     const nicUrl = pick('nicUrl', 'nicurl', 'nic_url');
     const photoUrl = pick('photoUrl', 'photourl', 'photo_url');
 
     // Required field check
     const required = { firstName, lastName, address, city, province, nic,
                        passportNumber, passportExpiry, jobCategory,
-                       passportUrl, birthCertUrl, nicUrl, photoUrl };
+                       passportUrl, cvUrl, nicUrl, photoUrl };
     for (const [key, val] of Object.entries(required)) {
       if (!val) return res.status(400).json({ error: `Missing required field: ${key}` });
     }
@@ -63,7 +63,7 @@ router.post('/', auth, async (req, res) => {
       passportNumber, passportCountry: passportCountry || 'Sri Lanka',
       passportIssue: passportIssue || '', passportExpiry,
       jobCategory,
-      passportUrl, birthCertUrl, nicUrl, photoUrl,
+      passportUrl, cvUrl, nicUrl, photoUrl,
       extraUrls: Array.isArray(extraUrls) ? extraUrls : (extraUrls ? [extraUrls] : []),
       submittedAt, status: 'Submitted',
     });
