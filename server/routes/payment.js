@@ -109,6 +109,18 @@ router.get('/return', async (req, res) => {
 router.get('/test-success', async (req, res) => {
   try {
     const orderId = 'EMP-TEST-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    await createOrder({
+      orderId,
+      name: 'Test User',
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      phone: '0712345678',
+      status: 'Paid',
+      createdAt: new Date().toISOString(),
+      paidAt: new Date().toISOString(),
+    });
+
     const token = jwt.sign(
       { orderId, name: 'Test User', email: 'test@example.com', phone: '0712345678', paid: true },
       process.env.JWT_SECRET,
