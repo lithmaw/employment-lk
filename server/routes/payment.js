@@ -3,8 +3,7 @@ const router   = express.Router();
 const crypto   = require('crypto');
 const jwt      = require('jsonwebtoken');
 const { generateHash, verifyNotifyHash } = require('../services/payhere');
-const { createOrder, getOrder, updateOrder } = require('../services/firestore');
-const { appendRow } = require('../services/googleSheets');
+const { createOrder, getOrder, updateOrder } = require('../services/db');
 
 // ── POST /api/payment/initiate ─────────────────────────────────────────────
 router.post('/initiate', async (req, res) => {
@@ -63,15 +62,6 @@ router.post('/notify', async (req, res) => {
 
     if (status_code === '2') {
       await updateOrder(order_id, { status: 'Paid', paidAt: new Date().toISOString() });
-      const order = await getOrder(order_id);
-      await appendRow([
-        new Date().toISOString(), '',
-        order?.firstName || '', order?.lastName || '',
-        '', '', order?.phone || '', order?.email || '',
-        '', '', '', '', '', '',
-        'Online Payment', 'Paid',
-        '', '', '', '', '',
-      ]);
     }
 
     res.status(200).send('OK');

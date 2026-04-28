@@ -2,8 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const crypto  = require('crypto');
 const auth    = require('../middleware/auth');
-const { createApplication, updateOrder } = require('../services/firestore');
-const { appendRow } = require('../services/googleSheets');
+const { createApplication, updateOrder } = require('../services/db');
 
 function generateRef() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -70,20 +69,6 @@ router.post('/', auth, async (req, res) => {
     });
 
     await updateOrder(user.orderId, { status: 'Application Submitted', refNumber });
-
-    const paymentMethod = user.codPending ? 'Cash on Delivery' : 'Online Payment';
-    const paymentStatus = user.codPending ? 'Pending COD'       : 'Paid';
-    const extraStr      = Array.isArray(extraUrls) ? extraUrls.join(', ') : (extraUrls || '');
-
-    await appendRow([
-      submittedAt, refNumber,
-      firstName, lastName, nic, dob || '',
-      resolvedPhone, user.email || '',
-      address, city, province,
-      passportNumber, passportExpiry, jobCategory,
-      paymentMethod, paymentStatus,
-      passportUrl, birthCertUrl, nicUrl, photoUrl, extraStr,
-    ]);
 
     res.json({ refNumber });
   } catch (err) {

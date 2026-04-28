@@ -2,8 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const crypto  = require('crypto');
 const jwt     = require('jsonwebtoken');
-const { createOrder } = require('../services/firestore');
-const { appendRow }   = require('../services/googleSheets');
+const { createOrder } = require('../services/db');
 
 // ── POST /api/cod/register ────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -22,17 +21,8 @@ router.post('/register', async (req, res) => {
         status: 'Pending COD',
         createdAt: new Date().toISOString(),
       });
-
-      await appendRow([
-        new Date().toISOString(), '',
-        firstName, lastName,
-        '', '', phone, email,
-        '', '', '', '', '', '',
-        'Cash on Delivery', 'Pending COD',
-        '', '', '', '', '',
-      ]);
     } catch (dbErr) {
-      console.warn('DB/Sheets integration skipped/failed:', dbErr.message);
+      console.warn('Order creation failed:', dbErr.message);
     }
 
     const token = jwt.sign(
